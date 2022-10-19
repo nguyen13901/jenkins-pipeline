@@ -7,10 +7,13 @@ pipeline {
             }
         }
         stage("Build docker"){
+            agent any
             steps {
-                sh 'docker build -t project-demo .'
-                sh 'docker run -dp 7009:8000 project-demo'
+                withDockerRegistry(url: 'https://index.docker.io/v1/') {
+                    sh 'docker build -t project-demo .'
+                    sh 'docker run -dp 7009:8000 project-demo'
+                }
             }
         }
-    }
+    } 
 }
