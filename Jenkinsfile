@@ -9,7 +9,7 @@ pipeline {
         stage("Build docker"){
             agent any
             steps {
-                withDockerRegistry(credentialsId: 'docker-pipeline', url: 'https://index.docker.io/v1/') {
+                withDockerRegistry(credentialsId: 'docker', url: 'https://index.docker.io/v1/') {
                     sh 'docker build -t binhphanvan/project-demo:v10 .'
                     sh 'docker push binhphanvan/project-demo:v10'
                 }
