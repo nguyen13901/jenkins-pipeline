@@ -1,19 +1,46 @@
 pipeline {
     agent any
+
+    environment {
+        DOCKER_IMAGE = "jenkins-pipeline"
+    }
+    
     stages{
-        stage("Clone source"){
+        stage("Test") {
             steps {
-                git 'https://github.com/BinhPhanVan/jenkins-pipeline.git'
+                sh "pip install -r requirements.txt"
+                sh "pytest"
             }
         }
-        stage("Build docker"){
-            agent any
+
+        stage("Build") {
             steps {
-                withDockerRegistry(credentialsId: 'docker', url: 'https://index.docker.io/v1/') {
-                    sh 'docker build -t project-demo .'
-                    sh 'docker run -dp 7009:8000 project-demo'
+                script {
+                    try {
+                        sh "docker rm unruffled_herschel -f"
+                        sh "docker image rm ${DOCKER_IMAGE}:lastest"
+                    }
+                    catch (err) {
+                        echo err.getMessage()
+                    }
+                    sh "docker build . -t ${DOCKER_IMAGE}:lastest"
                 }
             }
         }
-    } 
+
+        stage("Release") {
+            steps {
+                sh "docker run -p 8000:8000 ${DOCKER_IMAGE}:lastest"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "SUCCESSFUL"
+        }
+        failure {
+            echo "FAILED"
+        }
+    }
 }
